@@ -2,7 +2,7 @@
 print(Sys.getenv("USER"))
 # # LOCAL:
 if (Sys.getenv("USER")=="niek"){
-  setwd("/Users/niek/repos/itc-main-repo/Niek/ECG/exerciseecg_data/ECG_averaging/shinyapp/ecgenetics8/")
+  setwd("/Users/niek/repos/itc-main-repo/Niek/ECG/exerciseecg_data/ECG_averaging/shinyapp/ecgenetics9/")
 } else if (Sys.getenv("USER")=="benzhi") {
   setwd("/mnt/linux_data/Repos/bitbucket_itc/itc-main-repo/Niek/ECG/exerciseecg_data/ECG_averaging/shinyapp/ecgenetics7")
 } else{
@@ -13,6 +13,7 @@ source("helpers.R")
 source("helpers.heatmap.R")
 source("helpers.regionalplot.R")
 source("get_nearest_gene.r")
+load("tsnedata.Rdata")
 
 library(DT)
 library(shinyWidgets)
@@ -32,9 +33,7 @@ ui <- navbarPage(title="ECGenetics Browser",
           
 #          hr(),
           p("Enter a list of SNPs (rs572474770, rs776293589, 2:179698596), a region (2:179381323-179405807) or a Gene (e.g. SCN5A) and click the Go button to extract variants."), #, Region (e.g. 10:30000-40000) or Gene name (e.g. TTN) 
-          textAreaInput("rsid", "RSids, region or gene",value = "rs776293589, rs1045716, rs201106462, rs41312411, rs572474770, rs571037730, rs76521806, rs6801957, rs55851300, rs1051375, rs34081637,rs12541595 , rs10774625, rs10774625,rs806322,rs4765663,
-                        2:179768491_TA_T,rs10497529,rs151041685,rs16866397,rs16866420,rs66677602,
-                        rs2234962,rs1763604",#TTN independent
+          textAreaInput("rsid", "RSids, region or gene",value = paste(dftsne$rsid,collapse = ", "),#TTN independent
                         width="100%",rows = 4),
           radioButtons("subset", "Search Dataset",
                        c("Tophits (140k+, fast)" = "tophits",
@@ -88,12 +87,26 @@ ui <- navbarPage(title="ECGenetics Browser",
    #          verbatimTextOutput("Summary"),
    #          img(src='https://db-service.toubiz.de/var/plain_site/storage/images/orte/zermatt/matterhorn/cr-pascal-gertschen-2018-zt_sommer_web_dscf0814/3206064-1-ger-DE/cr-Pascal-Gertschen-2018-ZT_Sommer_Web_DSCF0814_front_large.jpg', align = "left")
    # ),
-   tabPanel("Terms and Data Information",
-            titlePanel(h3("Terms and Data Information")),
-            hr(),
-            verbatimTextOutput("About"),
-            includeMarkdown("about.md")
-   )
+   tabPanel("Interactive T-SNE plot",
+            titlePanel(h3("Interactive T-SNE plot (manuscript)")),
+            plotlyOutput("oPlotTsne",width="100%",height="auto"),
+            splitLayout(width = "1005px" , 
+                        cellArgs = list(style =  "width: 500px"), #cellArgs = list(style =  "width: 500px, float:left; display:inline"),
+                        plotlyOutput("oPlot_ecg_unadjusted"), 
+                        plotlyOutput("oPlot_ecg_stretch")),
+            
+            # plotlyOutput("oPlot_ecg_unadjusted",width="100%",height="auto"),
+            # plotlyOutput("oPlot_ecg_stretch",width="100%",height="auto"),
+            
+            hr()
+   ),
+  tabPanel("Terms and Data Information",
+           titlePanel(h3("Terms and Data Information")),
+           hr(),
+           verbatimTextOutput("About"),
+           includeMarkdown("about.md")
+  )
+
 #     tabPanel("Downloads",
 #          titlePanel(h3("Data")),
 #          hr(),
@@ -101,6 +114,7 @@ ui <- navbarPage(title="ECGenetics Browser",
 # )
 
 )
+
 server <- function(input, output, session) {
   hideTab(inputId = "analysistabs", target = "Regional Plot")
   rsids=c("rs201106462")
@@ -114,6 +128,20 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "analysistabs",
                       selected = "Table"
     )
+    
+    
+    # load preloaded data quicly (all lead snps) if nothing on input is changed
+    if(input$rsid == paste(dftsne$rsid,collapse = ", ")){
+      if (input$phenotype =="unadjusted"){
+        futureData$data <<- datatsne.unadjusted
+        return(NULL)
+      }
+      if (input$phenotype =="stretch"){
+        futureData$data <<- datatsne.stretch
+        return(NULL)
+      }
+      
+    }
     # record query settings
     query <- process_user_input(input$rsid,
                                 mapping.proteincoding,
@@ -422,8 +450,74 @@ server <- function(input, output, session) {
     )
 
     
+  ######### TSNE: 
+    
+    output$oPlotTsne <- renderPlotly({
+      
+      ptsne <- ggplot(dftsne, aes(x = tsne1, y = tsne2, colour = clusters,text=snps)) + 
+        geom_point(alpha = 0.3,show.legend = FALSE ) + theme_bw() 
+      plotly::hide_legend(plotly::ggplotly(ptsne,tooltip="text",height = 600, width = 900))
+
+    })
+    
+    #### CAPTURE CLICK EVENTS
+    Clicked_tsne <- reactiveValues(i="NA",rsid="rs116015634") # initialize
+    observeEvent( event_data(event = "plotly_click",source = "A"), {
+      s <- event_data(event = "plotly_click",source = "A")
+      Clicked_tsne$i <- "NA"
+      Clicked_tsne$rsid <- dftsne[round(dftsne$tsne1,5) %in%  round(s$x,5),'rsid']  
+      
+      #plotlyOutput("oPlot_ecg_unadjusted",width="100%",height="auto"),
+      #plotlyOutput("oPlot_ecg_stretch",width="100%",height="auto"),
+
+    })
+
+    output$oPlot_ecg_unadjusted <- renderPlotly({
+      if(Clicked_tsne$rsid!="NA"){ # if clicked on region plot, we don't know the index
+        print("Clicked_tsne$rsid")
+        print(Clicked_tsne$rsid)
+        Clicked_tsne$i <- which(datatsne.unadjusted$df_snp_info$SNP == Clicked_tsne$rsid)
+        # } else { # else...?
+        #   print("Clicked$i")
+        #   print(Clicked$i)
+      
+        df_ecg_stats = df_ecg_unadjusted
 
 
+      ecg_plot <- suppressWarnings(  make_ecg_plot(vct_snp_p=datatsne.unadjusted$df_snp_p[Clicked_tsne$i,],
+                                                   vct_snp_beta=if(datatsne.unadjusted$df_snp_beta !=""){datatsne.unadjusted$df_snp_beta[Clicked_tsne$i,]}else{""}, # not used//todo
+                                                   vct_snp_se=if(datatsne.unadjusted$df_snp_se !=""){datatsne.unadjusted$df_snp_se[Clicked_tsne$i,]}else{""}, # not used//todo
+                                                   vct_snp_info=datatsne.unadjusted$df_snp_info[Clicked_tsne$i,],
+                                                   df_ecg_stats = df_ecg_stats,
+                                                   invert=FALSE) + ggtitle(paste0(Clicked_tsne$rsid,"(",datatsne.unadjusted$df_snp_info$Gene[Clicked_tsne$i],") - unadjusted")) # average ecg signal.
+      )
+      ggplotly(ecg_plot,tooltip = "text",height = 400, width = 500,dynamicTicks=TRUE,source="source_ecgplot" )
+      }
+    })
+    
+    output$oPlot_ecg_stretch <- renderPlotly({
+      if(Clicked_tsne$rsid!="NA"){ # if clicked on region plot, we don't know the index
+        print("Clicked_tsne$rsid")
+        print(Clicked_tsne$rsid)
+        Clicked_tsne$i <- which(datatsne.stretch$df_snp_info$SNP == Clicked_tsne$rsid)
+        # } else { # else...?
+        #   print("Clicked$i")
+        #   print(Clicked$i)
+        
+        df_ecg_stats = df_ecg_stretch
+        
+        
+        ecg_plot <- suppressWarnings(  make_ecg_plot(vct_snp_p=datatsne.stretch$df_snp_p[Clicked_tsne$i,],
+                                                     vct_snp_beta=if(datatsne.stretch$df_snp_beta !=""){datatsne.stretch$df_snp_beta[Clicked_tsne$i,]}else{""}, # not used//todo
+                                                     vct_snp_se=if(datatsne.stretch$df_snp_se !=""){datatsne.stretch$df_snp_se[Clicked_tsne$i,]}else{""}, # not used//todo
+                                                     vct_snp_info=datatsne.stretch$df_snp_info[Clicked_tsne$i,],
+                                                     df_ecg_stats = df_ecg_stats,
+                                                     invert=FALSE) + ggtitle(paste0(Clicked_tsne$rsid,"(",datatsne.stretch$df_snp_info$Gene[Clicked_tsne$i],") - RR-adjusted")) # average ecg signal.
+        )
+        ggplotly(ecg_plot,tooltip = "text",height = 400, width = 500,dynamicTicks=TRUE,source="source_ecgplot" )
+      }
+    })
+    
 }
 
 shinyApp(ui, server)
