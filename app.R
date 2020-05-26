@@ -132,11 +132,11 @@ server <- function(input, output, session) {
     
     # load preloaded data quicly (all lead snps) if nothing on input is changed
     if(input$rsid == paste(dftsne$rsid,collapse = ", ")){
-      if (input$phenotype =="unadjusted"){
+      if (input$phenotype =="unadjusted" & !input$include_betas ){
         futureData$data <<- datatsne.unadjusted
         return(NULL)
       }
-      if (input$phenotype =="stretch"){
+      if (input$phenotype =="stretch" & !input$include_betas){
         futureData$data <<- datatsne.stretch
         return(NULL)
       }
