@@ -68,11 +68,11 @@ ui <- navbarPage(title="ECGenetics Browser",
             tabPanel("Heatmap", 
                      div(style="display: inline-block;vertical-align:top; width: 200px;", ## divs for inline. 
                      shinyWidgets::sliderTextInput("slider_hmpvalue_treshold","P-Value treshold:",
-                                                   choices=c(0.000000001,0.00000001,0.00000005,0.0000001,0.0000005 ,0.000001,0.000005,0.00001,0.00005,0.0001,0.0005,0.001,0.005, 0.01,0.05,1),
+                                                   choices=c(0.00000000001,0.0000000001,0.000000001,0.00000001,0.00000005,0.0000001,0.0000005 ,0.000001,0.000005,0.00001,0.00005,0.0001,0.0005,0.001,0.005, 0.01,0.05,1),
                                                    selected=0.00000005, grid = T)),
                      div(style="display: inline-block;vertical-align:top; padding-top: 27px; width: 125px;",  verbatimTextOutput("oTextHeatmap")),
                      div(style="display: inline-block;vertical-align:top; padding-top: 27px; width: 150px;",  actionButton("hmrefreshButton", "Refresh")),   # https://github.com/dreamRs/shinyWidgets/issues/91
-                     p("Please limit to <100 for now, else it will probably fail to plot due to memory issues."),
+                     p("Please limit to <150 for now, else it will probably fail to plot due to memory issues."),
                       
                      plotlyOutput("hmPlot",width="100%",height="auto")
             )
@@ -371,8 +371,8 @@ server <- function(input, output, session) {
       if (hm_snps_selected$number<=1){shiny::showNotification('Need more than 1 variant, provide more variants or change P value treshold', type = "error")}
       validate(need(hm_snps_selected$number>1, 'Need more than 1 variant, provide more variants or change P value treshold'))
       
-      if (hm_snps_selected$number>100){shiny::showNotification("too many snps, the max is 100 right now.", type = "error")}
-      validate(need(hm_snps_selected$number<=100,"too many snps, max is 100, contact us if more is needed")) # catch error
+      if (hm_snps_selected$number>150){shiny::showNotification("too many snps, the max is 150 right now.", type = "error")}
+      validate(need(hm_snps_selected$number<=150,"too many snps, max is 150, contact us if more is needed")) # catch error
       
       showModal(modalDialog("Please wait.", footer=NULL))
       data = futureData$data
