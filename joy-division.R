@@ -1,7 +1,7 @@
 require(raster)
 require(ggplot2)
 
-setwd("/data_work/bitbucket/itc-main-repo/Niek/ECG/exerciseecg_data/ECG_averaging/shinyapp/ecgenetics6")
+setwd("/Users/niek/repos/ecgenetics/")
 source("global.R")
 source("helpers.R")
 source("helpers.heatmap.R")

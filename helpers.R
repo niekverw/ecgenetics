@@ -16,7 +16,7 @@ make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,d
   dfecg$logP <- as.numeric(dfecg$logP)
   if(invert==TRUE) dfecg$logP <- -1*dfecg$logP
   
-  if(is.data.frame(vct_snp_beta) & is.data.frame(vct_snp_se) & length(vct_snp_p)==500 ) {
+  if(length(vct_snp_beta)==500 & length(vct_snp_se)==500 & length(vct_snp_p)==500 ) {
     dfecg$BETA <- as.numeric(vct_snp_beta)
     if(invert==TRUE) dfecg$BETA <- -1*dfecg$BETA
     dfecg$cil <-dfecg$BETA - 1.96*as.numeric(vct_snp_se)
@@ -68,7 +68,7 @@ make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,d
     ylab("Signed -log10(P-value)") + xlab("Time (ms)") +
     labs(title=vct_snp_info$SNP, subtitle=vct_snp_info$Gene)
   
-  if(is.data.frame(vct_snp_beta) & is.data.frame(vct_snp_se) & length(vct_snp_p)==500 ) {
+  if(length(vct_snp_beta)==500 & length(vct_snp_se)==500 & length(vct_snp_p)==500 ) {
     ecgplot <- ecgplot +  geom_ribbon(aes(ymin=cil, ymax=ciu,x = time), linetype=2, alpha=0.1) + 
     geom_line(colour="grey",aes(y=BETA)) + 
     scale_y_continuous(
@@ -143,7 +143,7 @@ make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,d
 
 ######################
 #### VERSION 2.0
-process_user_input <- function(entry,mapping.proteincoding,window=500000,subset="tophits",phenotype="unadjusted"){
+process_user_input <- function(entry,mapping.proteincoding,window=500000,subset="tophits",phenotype="unadjusted",max_query=1000){
   
   entry=unlist(strsplit( entry ,"\n|[, ]+"))
   entry=unlist(strsplit( entry ,"\n|[, ]+"))
@@ -203,10 +203,10 @@ process_user_input <- function(entry,mapping.proteincoding,window=500000,subset=
   
   ## ERROR IF Too many snps. 
   if( query$entry =="snp"  ){
-    if(length(query$snp)>500){
+    if(length(query$snp)>max_query){
       showModal(modalDialog(
         title = "error",
-        "too many random snps, max is 500",
+        paste0("too many random snps, max is ",max_query),
         easyClose = TRUE
       ))
       query$error <-TRUE
