@@ -455,7 +455,7 @@ server <- function(input, output, session) {
         df_averagevolts <- cbind(df_ecg_unadjusted,df_ecg_stretch)
         names(df_averagevolts) <- c(paste0(names(df_ecg_unadjusted),"_unadjusted"),paste0(names(df_ecg_stretch),"_RRadjusted"))
 
-        d.tmp=tempfile(pattern=paste0(phenotypename,"_"),tmpdir="data/") #paste0(getwd(),"/data"))
+        d.tmp=tempfile(pattern=paste0(phenotypename,"_"),tmpdir="data_tmp/") #paste0(getwd(),"/data"))
         dir.create(d.tmp,showWarnings=TRUE,recursive=TRUE)
         fecg <- paste(d.tmp,"/",phenotypename, ".snpstats.csv", sep = "")
         faveragevoltage <- paste(d.tmp,"/average_voltages.csv", sep = "")

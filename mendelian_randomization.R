@@ -14,6 +14,7 @@ source("get_nearest_gene.r")
 ## choose instruments; 
 # classic ECG: 
 dfmrexposures <- data.frame(fread("data/tableS13.tsv"))
+dfmrexposures <- dfmrexposures[dfmrexposures$Included.in.the.PRS %in% 1 ,]
 dfmrexposures <- dfmrexposures[dfmrexposures$TRAIT %in% unique(dfmrexposures$TRAIT)[6] & dfmrexposures$Included.in.the.PRS %in% 1,]
 
 # MR BASE: 
