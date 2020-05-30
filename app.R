@@ -106,7 +106,8 @@ ui <- navbarPage(title="ECGenetics Browser",
            titlePanel(h3("ECG-wide Mendelian randomization")),
            
            fileInput('fmrexposures', 'Choose file. '),
-           "Include the following columns with headers: CHR, BP,  EFAL, NEFAL, EAF, BETA, SE. Ensure positions are on Build 37. This is a test, it is very slow since it needs to query the full 75 GB of data and my VPS has no superpowers.",
+           "Provide a summary statistics file with up to 1000 variants. Include the following columns with headers: CHR, BP,  EFAL, NEFAL, EAF, BETA, SE. Ensure positions are on Build 37. This is a try-out. It may be very slow since it needs to query the full 75 GB of data and my VPS has no superpowers.",
+           tags$a(href="https://raw.githubusercontent.com/niekverw/ecgenetics/master/data/QTinterval.tsv", "<Download a QT-interval example here> "),
            # splitLayout(width = "1005px" , 
            #             cellArgs = list(style =  "width: 500px"), #cellArgs = list(style =  "width: 500px, float:left; display:inline"),
            #             plotlyOutput("omrPlot_ecg_unadjusted"), 
@@ -545,7 +546,7 @@ server <- function(input, output, session) {
     ####################################################################
     rv_mr <- reactiveValues(dfmrexposures = NULL,mrplot_unadjusted=NULL,mrplot_rradjusted=NULL)
     
-    observe({
+    observe({ # file upload
       req(input$fmrexposures)
       if (is.null(input$fmrexposures)) {return(NULL)}
       print(input$fmrexposures$datapath)
