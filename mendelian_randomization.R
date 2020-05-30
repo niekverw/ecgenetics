@@ -27,12 +27,11 @@ library(ieugwasr)
 ieugwases <- ieugwasr::gwasinfo()
 
 gwasid = "ebi-a-GCST006414"
-gwasid="ukb-d-12340_irnt"
-gwasid = "ukb-b-19953"
-
+gwasid = "ukb-b-19953" # bmi
+gwasid = "ieu-a-89"# height
 dfmrexposures <- tophits(
   id=gwasid,
-  pval = 5e-08,
+  pval = 5e-8,
   clump = 1,
   r2 = 0.001,
   kb = 10000,
@@ -42,8 +41,9 @@ dfmrexposures <- tophits(
 )
 dfmrexposures<-dfmrexposures[,c("p", "se", "n", "beta", "position", "chr", "id", "rsid", "ea",  "nea", "eaf", "trait")]
 names(dfmrexposures) <- c("PVAL", "SE", "N", "BETA", "BP", "CHR", "id", "SNP", "EFAL","NEFAL", "EAF", "TRAIT")
-dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
 #fwrite(x=dfmrexposures,file = paste0("/Users/niek/Downloads/",gwasid,".tsv"),quote = F,sep="\t" )
+dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
+
 
 ##############
 
