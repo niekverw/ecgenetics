@@ -29,6 +29,7 @@ ieugwases <- ieugwasr::gwasinfo()
 gwasid = "ebi-a-GCST006414"
 gwasid = "ukb-b-19953" # bmi
 gwasid = "ieu-a-89"# height
+gwasid = "ukb-b-20175" # sbp
 dfmrexposures <- tophits(
   id=gwasid,
   pval = 5e-8,
@@ -41,12 +42,12 @@ dfmrexposures <- tophits(
 )
 dfmrexposures<-dfmrexposures[,c("p", "se", "n", "beta", "position", "chr", "id", "rsid", "ea",  "nea", "eaf", "trait")]
 names(dfmrexposures) <- c("PVAL", "SE", "N", "BETA", "BP", "CHR", "id", "SNP", "EFAL","NEFAL", "EAF", "TRAIT")
-#fwrite(x=dfmrexposures,file = paste0("/Users/niek/Downloads/",gwasid,".tsv"),quote = F,sep="\t" )
-dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
+fwrite(x=dfmrexposures,file = paste0("/Users/niek/Downloads/",gwasid,".tsv"),quote = F,sep="\t" )
+
 
 
 ##############
-
+dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
 
 input= unique(dfmrexposures$uniqid)
 query <- process_user_input(input,mapping.proteincoding)
@@ -61,6 +62,7 @@ data_unadjusted <- extract_multiple_variants(tabix_query,dir_data,
   
   data_unadjusted <- harmonizedfs(dfmrexposures,data_unadjusted)
   mr_unadjusted <- ecg_wide_ivw(data_unadjusted)
+  
   data_unadjusted$df_snp_info[1,]$SNP <- "IVW-fixed effect unadjusted"
   data_unadjusted$df_snp_info[1,]$Gene <- "IVW-fixed effect unadjusted"
   mrplot_unadjusted <- make_ecg_plot(vct_snp_p=t(data.frame(mr_unadjusted$p)),

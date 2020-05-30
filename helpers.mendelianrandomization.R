@@ -46,6 +46,23 @@ harmonizedfs <- function(dfexposure,data){
    return(data)
 }
 
+#TwoSampleMR
+mr_ivw_fe <- function (b_exp, b_out, se_exp, se_out, parameters = default_parameters()) 
+{
+   if (sum(!is.na(b_exp) & !is.na(b_out) & !is.na(se_exp) & 
+           !is.na(se_out)) < 2) 
+      return(list(b = NA, se = NA, pval = NA, nsnp = NA))
+   ivw.res <- summary(lm(b_out ~ -1 + b_exp, weights = 1/se_out^2))
+   b <- ivw.res$coef["b_exp", "Estimate"]
+   se <- ivw.res$coef["b_exp", "Std. Error"]/ivw.res$sigma
+   pval <- 2 * pnorm(abs(b/se), lower.tail = FALSE)
+   Q_df <- length(b_exp) - 1
+   Q <- ivw.res$sigma^2 * Q_df
+   Q_pval <- pchisq(Q, Q_df, lower.tail = FALSE)
+   return(list(b = b, se = se, pval = pval, nsnp = length(b_exp), 
+               Q = Q, Q_df = Q_df, Q_pval = Q_pval))
+}
+
 ecg_wide_ivw <- function(data){
    pvalues=c()
    betas=c()
@@ -54,20 +71,26 @@ ecg_wide_ivw <- function(data){
       
       #data$dfexposure
       
+      t <- mr_ivw_fe(b_exp = data$dfexposure$BETA, 
+                se_exp = data$dfexposure$SE,
+                b_out = as.numeric(data$df_snp_beta[,i]),
+                                           se_out = as.numeric(data$df_snp_se[,i]))
+      if(is.infinite(abs(-log10(t$pval)) )){ t$pval=1e-307 }
       
+      pvalues=c(pvalues,-log10(t$pval)*sign(t$b))
+      betas=c(betas,t$b)
+      ses=c(ses,t$se)
       
-      MRInputObject <- mr_input(snp=data$df_snp_info$SNP, bx = data$dfexposure$BETA, bxse = data$dfexposure$SE,
-                                by = as.numeric(data$df_snp_beta[,i]),
-                                byse = as.numeric(data$df_snp_se[,i]))
-      ivw <- MendelianRandomization::mr_ivw_fe(MRInputObject)
-      
-      pvalues=c(pvalues,-log10(ivw@Pvalue)*sign(ivw@Estimate))
-      
-      #beta=if(is.nan(-log10(ivw@Estimate)) ){0} else{(ivw@Estimate)}
-      betas=c(betas,ivw@Estimate)
-      ses=c(ses,ivw@StdError)
+      # MRInputObject <- mr_input(snp=data$df_snp_info$SNP, bx = data$dfexposure$BETA, bxse = data$dfexposure$SE,
+      #                           by = as.numeric(data$df_snp_beta[,i]),
+      #                           byse = as.numeric(data$df_snp_se[,i]))
+      # #ivw <- MendelianRandomization::mr_ivw (MRInputObject)
+      # pvalues=c(pvalues,-log10(ivw@Pvalue)*sign(ivw@Estimate))
+      # betas=c(betas,ivw@Estimate)
+      # ses=c(ses,ivw@StdError)
       
    }
+   
    
    #plot(1:500,pvalues)
    
