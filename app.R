@@ -546,19 +546,23 @@ server <- function(input, output, session) {
     rv_mr <- reactiveValues(dfmrexposures = NULL,mrplot_unadjusted=NULL,mrplot_rradjusted=NULL)
     
     observe({
-      #https://gist.github.com/bborgesr/07406b30ade8a011e59971835bf6c6f7
       req(input$fmrexposures)
       if (is.null(input$fmrexposures)) {return(NULL)}
       print(input$fmrexposures$datapath)
-      dfmrexposures <<- data.table::fread(input$fmrexposures$datapath, header=T, data.table = F)#, verbose = T)
+      dfmrexposures <- data.table::fread(input$fmrexposures$datapath, header=T, data.table = F)#, verbose = T)
       ### insert mendelian_randomization.R ()
       dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
 
       output$tbl_dfmrexposures <- renderTable({
         dfmrexposures
       })
+      rv_mr$dfmrexposures <<- dfmrexposures
+    })
+    
+    observeEvent(rv_mr$dfmrexposures,{
+      req(rv_mr$dfmrexposures)
       
-      input= unique(dfmrexposures$uniqid)
+      input= unique(rv_mr$dfmrexposures$uniqid)
       query <- process_user_input(input,mapping.proteincoding)
       tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
 
@@ -571,7 +575,7 @@ server <- function(input, output, session) {
                                                      f.data.index="unadjusted.logP.outfile.index.tsv.gz"
         )
         
-        data_unadjusted <- harmonizedfs(dfmrexposures,data_unadjusted)
+        data_unadjusted <- harmonizedfs(rv_mr$dfmrexposures,data_unadjusted)
         mr_unadjusted <- ecg_wide_ivw(data_unadjusted)
         data_unadjusted$df_snp_info[1,]$SNP <- "IVW-fixed effect unadjusted"
         data_unadjusted$df_snp_info[1,]$Gene <- "IVW-fixed effect unadjusted"
@@ -592,7 +596,7 @@ server <- function(input, output, session) {
                                                      f.data.index="stretch.logP.outfile.index.tsv.gz"
         )
         
-        data_rradjusted <- harmonizedfs(dfmrexposures,data_rradjusted)
+        data_rradjusted <- harmonizedfs(rv_mr$dfmrexposures,data_rradjusted)
         mr_rradjusted <- ecg_wide_ivw(data_rradjusted)
         data_rradjusted$df_snp_info[1,]$SNP <- "IVW-fixed effect RR-adjusted"
         data_rradjusted$df_snp_info[1,]$Gene <- "IVW-fixed effect RR-adjusted"
@@ -604,11 +608,11 @@ server <- function(input, output, session) {
                                            df_ecg_stats=df_ecg_unadjusted,
                                            invert=FALSE) #+ ggtitle(paste0("RR-adjusted"))
         
-        dfmrexposures_NA <- dfmrexposures[!dfmrexposures$uniqid %in% data_unadjusted$df_snp_info$uniqid,]
-        dfmrexposures <- dfmrexposures[dfmrexposures$uniqid %in% data_unadjusted$df_snp_info$uniqid,]
+        dfmrexposures_NA <- rv_mr$dfmrexposures[!rv_mr$dfmrexposures$uniqid %in% data_unadjusted$df_snp_info$uniqid,]
+        dfmrexposures_nonNA <- rv_mr$dfmrexposures[rv_mr$dfmrexposures$uniqid %in% data_unadjusted$df_snp_info$uniqid,]
         
         return(list(dfmrexposures_NA=dfmrexposures_NA,
-                    dfmrexposures=dfmrexposures,
+                    dfmrexposures_nonNA=dfmrexposures_nonNA,
                     data_unadjusted=data_unadjusted,
                     data_rradjusted=data_rradjusted,
                     mrplot_unadjusted=mrplot_unadjusted,
@@ -626,7 +630,7 @@ server <- function(input, output, session) {
         rv_mr$mrplot_rradjusted <<- value$mrplot_rradjusted
         rv_mr$mrplot_unadjusted <<- value$mrplot_unadjusted
         rv_mr$dfmrexposures_NA <<- value$dfmrexposures_NA
-        rv_mr$dfmrexposures <<- value$dfmrexposures
+        rv_mr$dfmrexposures_nonNA <<- value$dfmrexposures_nonNA
         rv_mr$data_unadjusted <<- value$data_unadjusted
         rv_mr$data_rradjusted <<- value$data_rradjusted
         
@@ -664,7 +668,7 @@ server <- function(input, output, session) {
     output$txt_num_mr_variants <- renderText({ 
      
       req(rv_mr$dfmrexposures)
-        paste0("number of variants in the MR: ",nrow(rv_mr$dfmrexposures),"\n",
+        paste0("number of variants in the MR: ",nrow(rv_mr$dfmrexposures_nonNA),"\n",
              "number of variants not found: ",nrow(rv_mr$dfmrexposures_NA))
       
     })
