@@ -560,10 +560,10 @@ server <- function(input, output, session) {
       showModal(modalDialog("Please wait.", footer=NULL))
       myFuture <- future(  {
         data_unadjusted <- extract_multiple_variants(tabix_query,dir_data,
-                                                     f.data_p="unadjusted.logP.outfile.tsv.chr.gz.tophits.gz",
-                                                     f.data_beta="unadjusted.BETA.outfile.tsv.gz.tophits.gz",
-                                                     f.data_se="unadjusted.SE.outfile.tsv.gz.tophits.gz",
-                                                     f.data.index="unadjusted.logP.outfile.index.tsv.gz.tophits.gz"
+                                                     f.data_p="unadjusted.logP.outfile.tsv.chr.gz",
+                                                     f.data_beta="unadjusted.BETA.outfile.tsv.gz",
+                                                     f.data_se="unadjusted.SE.outfile.tsv.gz",
+                                                     f.data.index="unadjusted.logP.outfile.index.tsv.gz"
         )
         
         data_unadjusted <- harmonizedfs(dfmrexposures,data_unadjusted)
@@ -581,10 +581,10 @@ server <- function(input, output, session) {
         
         
         data_rradjusted <- extract_multiple_variants(tabix_query,dir_data,
-                                                     f.data_p="stretch.logP.outfile.tsv.chr.gz.tophits.gz",
-                                                     f.data_beta="stretch.BETA.outfile.tsv.gz.tophits.gz",
-                                                     f.data_se="stretch.SE.outfile.tsv.gz.tophits.gz",
-                                                     f.data.index="stretch.logP.outfile.index.tsv.gz.tophits.gz"
+                                                     f.data_p="stretch.logP.outfile.tsv.chr.gz",
+                                                     f.data_beta="stretch.BETA.outfile.tsv.gz",
+                                                     f.data_se="stretch.SE.outfile.tsv.gz",
+                                                     f.data.index="stretch.logP.outfile.index.tsv.g"
         )
         
         data_rradjusted <- harmonizedfs(dfmrexposures,data_rradjusted)

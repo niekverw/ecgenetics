@@ -51,14 +51,14 @@ ecg_wide_ivw <- function(data){
    ses=c()
    for (i in 1:500) {
       
-      data$dfexposure
+      #data$dfexposure
       
       
       
       MRInputObject <- mr_input(snp=data$df_snp_info$SNP, bx = data$dfexposure$BETA, bxse = data$dfexposure$SE,
                                 by = as.numeric(data$df_snp_beta[,i]),
                                 byse = as.numeric(data$df_snp_se[,i]))
-      ivw <- mr_ivw(MRInputObject)
+      ivw <- MendelianRandomization::mr_ivw(MRInputObject)
       
       pvalues=c(pvalues,-log10(ivw@Pvalue)*sign(ivw@Estimate))
       

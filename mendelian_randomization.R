@@ -17,9 +17,36 @@ dfmrexposures <- data.frame(fread("data/tableS13.tsv"))
 dfmrexposures <- dfmrexposures[dfmrexposures$TRAIT %in% unique(dfmrexposures$TRAIT)[6] & dfmrexposures$Included.in.the.PRS %in% 1,]
 
 # MR BASE: 
-require(TwoSampleMR)
+#devtools::install_github("mrcieu/ieugwasr")
 
-### insert mendelian_randomization.R ()
+library(ieugwasr)
+
+#remotes::install_github("MarkEdmondson1234/googleAnalyticsR")
+                        
+#get_access_token()
+ieugwases <- ieugwasr::gwasinfo()
+
+gwasid = "ebi-a-GCST006414"
+gwasid="ukb-d-12340_irnt"
+gwasid = "ukb-b-19953"
+
+dfmrexposures <- tophits(
+  id=gwasid,
+  pval = 5e-08,
+  clump = 1,
+  r2 = 0.001,
+  kb = 10000,
+  pop = "EUR",
+  force_server = FALSE,
+  access_token = check_access_token()
+)
+dfmrexposures<-dfmrexposures[,c("p", "se", "n", "beta", "position", "chr", "id", "rsid", "ea",  "nea", "eaf", "trait")]
+names(dfmrexposures) <- c("PVAL", "SE", "N", "BETA", "BP", "CHR", "id", "SNP", "EFAL","NEFAL", "EAF", "TRAIT")
+
+fwrite(x=dfmrexposures,file = paste0("/Users/niek/Downloads/",gwasid,".tsv"),quote = F,sep="\t" )
+
+##############
+
 dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
 
 input= unique(dfmrexposures$uniqid)
