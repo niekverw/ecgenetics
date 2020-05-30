@@ -59,7 +59,7 @@ ecg_wide_ivw <- function(data){
       MRInputObject <- mr_input(snp=data$df_snp_info$SNP, bx = data$dfexposure$BETA, bxse = data$dfexposure$SE,
                                 by = as.numeric(data$df_snp_beta[,i]),
                                 byse = as.numeric(data$df_snp_se[,i]))
-      ivw <- MendelianRandomization::mr_ivw(MRInputObject)
+      ivw <- MendelianRandomization::mr_ivw_fe(MRInputObject)
       
       pvalues=c(pvalues,-log10(ivw@Pvalue)*sign(ivw@Estimate))
       
