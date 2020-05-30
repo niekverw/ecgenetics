@@ -1,12 +1,12 @@
 ####################################################################################
 # environmental variables, strato or local (niekverw) 
+f.mapping.proteincoding = "data/mapping.proteincoding.tsv"
 
 if (Sys.getenv("USER")=="niek"){
   print("loading strato variables")
   f_static="/Users/niek/data/ecg/snpindexes.Rdata"
   f_ecg_unadjusted="/Users/niek/data/ecg/all.SignalAverage.unadjusted.mean.QRS.tsv.gz.mean.tsv"
   f_ecg_stretch="/Users/niek/data/ecg/all.SignalAverage.stretch.mean.QRS.tsv.gz.mean.tsv"
-  f.mapping.proteincoding = "/Users/niek/data/ecg/mapping.proteincoding.tsv"
   dir_data = "/Users/niek/data/ecg/" # contains "all_stats.unadjusted" and "all_stats.stretch"
   dir_recombination = "/data_work/databases/genetic_recombination_rates/hapmap/"
 } else if (Sys.getenv("USER") == "benzhi") {
@@ -14,14 +14,12 @@ if (Sys.getenv("USER")=="niek"){
   f_static="/mnt/linux_data/data/ecgenetics/snpindexes.Rdata"
   f_ecg_unadjusted="/mnt/linux_data/data/ecgenetics/all.SignalAverage.unadjusted.mean.QRS.tsv.gz.mean.tsv"
   f_ecg_stretch="/mnt/linux_data/data/ecgenetics/all.SignalAverage.stretch.mean.QRS.tsv.gz.mean.tsv"
-  f.mapping.proteincoding = "mapping.proteincoding.tsv"
   dir_data = "/mnt/linux_data/data/ecgenetics/"
   dir_recombination = "/mnt/linux_data/data/ecgenetics/recombination_rates/"
 } else {
   f_static="/data/datasets/ecg_morph_stats/snpindexes.Rdata"
   f_ecg_unadjusted="/data/datasets/ecg_morph_stats/all.SignalAverage.unadjusted.mean.QRS.tsv.gz.mean.tsv"
   f_ecg_stretch="/data/datasets/ecg_morph_stats/all.SignalAverage.stretch.mean.QRS.tsv.gz.mean.tsv"
-  f.mapping.proteincoding = "mapping.proteincoding.tsv"
   dir_data = "/data/datasets/ecg_morph_stats/" # contains "all_stats.unadjusted" and "all_stats.stretch"
   dir_recombination = "/data/datasets/recombination_rates/"
 }

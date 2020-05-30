@@ -15,7 +15,7 @@ source("helpers.regionalplot.R")
 source("helpers.mendelianrandomization.R")
 
 source("get_nearest_gene.r")
-load("tsnedata.Rdata")
+load("data/tsnedata.Rdata")
 
 library(DT)
 library(shinyWidgets)
