@@ -1,4 +1,4 @@
-TRAIT	author:journal:year	snp.id.orig	CHR	position	EFAL	NEFAL	EAF	BETA	SE	P	gene	Included in the PRS	missing_ukbiobank	beta_switch
+TRAIT	author:journal:year	snp.id.orig	CHR	BP	EFAL	NEFAL	EAF	BETA	SE	P	gene	Included in the PRS	missing_ukbiobank	beta_switch
 12-Leadsum	Harst:JACC:2016	rs2849028	1	23688933	A	G	0.274	154.420	25.630	1.69E-09	ZNF436,C1orf213	1	0	1
 12-Leadsum	Harst:JACC:2016	rs3816849	2	179667090	C	T	0.438	174.070	22.290	5.77E-15	TTN,CCDC141	1	0	1
 12-Leadsum	Harst:JACC:2016	rs6781009	3	38585434	C	T	0.260	171.080	26.070	5.30E-11	SCN10A,SCN5A	1	0	1

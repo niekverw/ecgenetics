@@ -2,7 +2,7 @@
 print(Sys.getenv("USER"))
 # # LOCAL:
 if (Sys.getenv("USER")=="niek"){
-  setwd("/Users/niek/repos/itc-main-repo/Niek/ECG/exerciseecg_data/ECG_averaging/shinyapp/ecgenetics9/")
+  setwd("/Users/niek/repos/ecgenetics/")
 } else if (Sys.getenv("USER")=="benzhi") {
   setwd("/mnt/linux_data/Repos/bitbucket_itc/itc-main-repo/Niek/ECG/exerciseecg_data/ECG_averaging/shinyapp/ecgenetics7")
 } else{
@@ -12,6 +12,8 @@ source("global.R")
 source("helpers.R")
 source("helpers.heatmap.R")
 source("helpers.regionalplot.R")
+source("helpers.mendelianrandomization.R")
+
 source("get_nearest_gene.r")
 load("tsnedata.Rdata")
 
@@ -100,6 +102,24 @@ ui <- navbarPage(title="ECGenetics Browser",
             
             hr()
    ),
+  tabPanel("ECG-wide Mendelian randomization",
+           titlePanel(h3("ECG-wide Mendelian randomization")),
+           
+           fileInput('fmrexposures', 'Choose file. '),
+           "Include the following columns with headers: CHR, BP,  EFAL, NEFAL, EAF, BETA, SE. Ensure positions are on Build 37.",
+           # splitLayout(width = "1005px" , 
+           #             cellArgs = list(style =  "width: 500px"), #cellArgs = list(style =  "width: 500px, float:left; display:inline"),
+           #             plotlyOutput("omrPlot_ecg_unadjusted"), 
+           #             plotlyOutput("omrPlot_ecg_stretch")),
+           splitLayout(width = "1005px" , 
+                       cellArgs = list(style =  "width: 500px"), #cellArgs = list(style =  "width: 500px, float:left; display:inline"),
+                       plotlyOutput("Omrplot_unadjusted"), 
+                       plotlyOutput("Omrplot_rradjusted")),
+           textOutput("txt_num_mr_variants"),
+           plotOutput("Oplot_freqcheck"),
+           #tableOutput('tbl_dfmrexposures_NA'),
+           hr()
+  ),
   tabPanel("Terms and Data Information",
            titlePanel(h3("Terms and Data Information")),
            hr(),
@@ -517,6 +537,135 @@ server <- function(input, output, session) {
         ggplotly(ecg_plot,tooltip = "text",height = 400, width = 500,dynamicTicks=TRUE,source="source_ecgplot" )
       }
     })
+    
+    
+    #####################################################################
+    #### MR: 
+    ####################################################################
+    rv_mr <- reactiveValues(dfmrexposures = NULL,mrplot_unadjusted=NULL,mrplot_rradjusted=NULL)
+    
+    observe({
+      #https://gist.github.com/bborgesr/07406b30ade8a011e59971835bf6c6f7
+      req(input$fmrexposures)
+      if (is.null(input$fmrexposures)) {return(NULL)}
+      print(input$fmrexposures$datapath)
+      dfmrexposures <<- data.table::fread(input$fmrexposures$datapath, header=T, data.table = F)#, verbose = T)
+      ### insert mendelian_randomization.R ()
+      dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
+
+      input= unique(dfmrexposures$uniqid)
+      query <- process_user_input(input,mapping.proteincoding)
+      tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
+
+      showModal(modalDialog("Please wait.", footer=NULL))
+      myFuture <- future(  {
+        data_unadjusted <- extract_multiple_variants(tabix_query,dir_data,
+                                                     f.data_p="unadjusted.logP.outfile.tsv.chr.gz.tophits.gz",
+                                                     f.data_beta="unadjusted.BETA.outfile.tsv.gz.tophits.gz",
+                                                     f.data_se="unadjusted.SE.outfile.tsv.gz.tophits.gz",
+                                                     f.data.index="unadjusted.logP.outfile.index.tsv.gz.tophits.gz"
+        )
+        
+        data_unadjusted <- harmonizedfs(dfmrexposures,data_unadjusted)
+        mr_unadjusted <- ecg_wide_ivw(data_unadjusted)
+        data_unadjusted$df_snp_info[1,]$SNP <- "IVW-fixed effect unadjusted"
+        data_unadjusted$df_snp_info[1,]$Gene <- "IVW-fixed effect unadjusted"
+        mrplot_unadjusted <- make_ecg_plot(vct_snp_p=t(data.frame(mr_unadjusted$p)),
+                                           vct_snp_beta=t(data.frame(mr_unadjusted$b)), #data$df_snp_beta,
+                                           vct_snp_se=t(data.frame(mr_unadjusted$s)), #data$df_snp_se,
+                                           vct_snp_info=data_unadjusted$df_snp_info[1,],
+                                           df_ecg_stats=df_ecg_unadjusted,
+                                           invert=FALSE) #+ ggtitle(paste0("unadjusted"))
+        
+        
+        
+        
+        data_rradjusted <- extract_multiple_variants(tabix_query,dir_data,
+                                                     f.data_p="stretch.logP.outfile.tsv.chr.gz.tophits.gz",
+                                                     f.data_beta="stretch.BETA.outfile.tsv.gz.tophits.gz",
+                                                     f.data_se="stretch.SE.outfile.tsv.gz.tophits.gz",
+                                                     f.data.index="stretch.logP.outfile.index.tsv.gz.tophits.gz"
+        )
+        
+        data_rradjusted <- harmonizedfs(dfmrexposures,data_rradjusted)
+        mr_rradjusted <- ecg_wide_ivw(data_rradjusted)
+        data_rradjusted$df_snp_info[1,]$SNP <- "IVW-fixed effect RR-adjusted"
+        data_rradjusted$df_snp_info[1,]$Gene <- "IVW-fixed effect RR-adjusted"
+        
+        mrplot_rradjusted <- make_ecg_plot(vct_snp_p=t(data.frame(mr_rradjusted$p)),
+                                           vct_snp_beta=t(data.frame(mr_rradjusted$b)), #data$df_snp_beta,
+                                           vct_snp_se=t(data.frame(mr_rradjusted$s)), #data$df_snp_se,
+                                           vct_snp_info=data_rradjusted$df_snp_info[1,],
+                                           df_ecg_stats=df_ecg_unadjusted,
+                                           invert=FALSE) #+ ggtitle(paste0("RR-adjusted"))
+        
+        dfmrexposures_NA <- dfmrexposures[!dfmrexposures$uniqid %in% data_unadjusted$df_snp_info$uniqid,]
+        dfmrexposures <- dfmrexposures[dfmrexposures$uniqid %in% data_unadjusted$df_snp_info$uniqid,]
+        
+        return(list(dfmrexposures_NA=dfmrexposures_NA,
+                    dfmrexposures=dfmrexposures,
+                    data_unadjusted=data_unadjusted,
+                    data_rradjusted=data_rradjusted,
+                    mrplot_unadjusted=mrplot_unadjusted,
+                    mrplot_rradjusted=mrplot_rradjusted))
+
+      })
+
+      promises::then(
+        myFuture,
+        onFulfilled = function(value) {
+          #print(str(value))
+          #print(value)
+          #rv_mr <<- value
+              
+        rv_mr$mrplot_rradjusted <<- value$mrplot_rradjusted
+        rv_mr$mrplot_unadjusted <<- value$mrplot_unadjusted
+        rv_mr$dfmrexposures_NA <<- value$dfmrexposures_NA
+        rv_mr$dfmrexposures <<- value$dfmrexposures
+        futureData$data <<- value$data_unadjusted
+        removeModal()
+          #rv_mr$mrplot_rradjusted <<- value$mrplot_rradjusted
+        },
+        onRejected = function(value) {
+          shiny::showNotification("No data found", type = "error")
+          removeModal()
+        }
+      )
+    })
+    output$Omrplot_rradjusted <- renderPlotly({
+      req(rv_mr$mrplot_rradjusted)
+        ggplotly(rv_mr$mrplot_rradjusted,tooltip = "text",height = 400, width = 500,dynamicTicks=TRUE,source="source_ecgplot" )
+        
+    })
+
+    output$Omrplot_unadjusted <- renderPlotly({
+      req(rv_mr$mrplot_unadjusted)
+        ggplotly(rv_mr$mrplot_unadjusted,tooltip = "text",height = 400, width = 500,dynamicTicks=TRUE,source="source_ecgplot" )
+    })
+    
+    output$Oplot_freqcheck <- renderPlot({
+      req(rv_mr$dfmrexposures)
+      print(rv_mr$dfmrexposures)
+      print(rv_mr$mrplot_unadjusted$df_snp_info)
+      plot(as.numeric(rv_mr$dfmrexposures$EAF),
+           rv_mr$mrplot_unadjusted$df_snp_info$EAF, 
+           xlab="EAF (Exposure data)", 
+           ylab="EAF (ECG data)"
+           ) #ggplotly(rv_mr$mrplot_unadjusted,tooltip = "text",height = 400, width = 500,dynamicTicks=TRUE,source="source_ecgplot" )
+    })
+    
+
+    output$txt_num_mr_variants <- renderText({ 
+     
+      req(rv_mr$dfmrexposures)
+        paste0("number of variants in the MR: ",nrow(rv_mr$dfmrexposures),"\n",
+             "number of variants not found: ",nrow(rv_mr$dfmrexposures_NA))
+      
+    })
+
+    
+    
+
     
 }
 
