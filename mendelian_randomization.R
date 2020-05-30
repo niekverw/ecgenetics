@@ -42,12 +42,11 @@ dfmrexposures <- tophits(
 )
 dfmrexposures<-dfmrexposures[,c("p", "se", "n", "beta", "position", "chr", "id", "rsid", "ea",  "nea", "eaf", "trait")]
 names(dfmrexposures) <- c("PVAL", "SE", "N", "BETA", "BP", "CHR", "id", "SNP", "EFAL","NEFAL", "EAF", "TRAIT")
-
-fwrite(x=dfmrexposures,file = paste0("/Users/niek/Downloads/",gwasid,".tsv"),quote = F,sep="\t" )
+dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
+#fwrite(x=dfmrexposures,file = paste0("/Users/niek/Downloads/",gwasid,".tsv"),quote = F,sep="\t" )
 
 ##############
 
-dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
 
 input= unique(dfmrexposures$uniqid)
 query <- process_user_input(input,mapping.proteincoding)
@@ -98,6 +97,9 @@ data_unadjusted <- extract_multiple_variants(tabix_query,dir_data,
   dfmrexposures_NA <- dfmrexposures[!dfmrexposures$uniqid %in% data_unadjusted$df_snp_info$uniqid,]
   dfmrexposures <- dfmrexposures[dfmrexposures$uniqid %in% data_unadjusted$df_snp_info$uniqid,]
   
+  
+  
 
+  plot(data_unadjusted$dfexposure$EAF , data_unadjusted$df_snp_info$EAF)
 
 

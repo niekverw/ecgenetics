@@ -116,8 +116,8 @@ ui <- navbarPage(title="ECGenetics Browser",
                        plotlyOutput("Omrplot_unadjusted"), 
                        plotlyOutput("Omrplot_rradjusted")),
            textOutput("txt_num_mr_variants"),
-           plotOutput("Oplot_freqcheck"),
-           #tableOutput('tbl_dfmrexposures_NA'),
+           plotOutput("Oplot_freqcheck",width=400,height=400),
+           tableOutput('tbl_dfmrexposures'),
            hr()
   ),
   tabPanel("Terms and Data Information",
@@ -187,18 +187,18 @@ server <- function(input, output, session) {
     f.data_beta=""
     f.data_se=""
     if( query$subset == "tophits"){
-      f.data_p=paste0(query$phenotype,".logP.outfile.tsv.chr.gz.tophits.gz")
+      f.data_p=paste0(query$phenotype,".logP.outfile.tsv.gz.tophits.gz")
       f.data.index=paste0("unadjusted.logP.outfile.index.tsv.gz.tophits.gz")
       if(input$include_betas){
         f.data_beta=paste0(query$phenotype,".BETA.outfile.tsv.gz.tophits.gz")
         f.data_se=paste0(query$phenotype,".SE.outfile.tsv.gz.tophits.gz")
       }
     } else {
-      f.data_p = paste0(query$phenotype,".logP.outfile.tsv.chr.gz")
+      f.data_p = paste0(query$phenotype,".logP.outfile.tsv.gz")
       f.data.index = paste0("unadjusted.logP.outfile.index.tsv.gz")
       if(input$include_betas){
-        f.data_beta=paste0(query$phenotype,".BETA.outfile.tsv.chr.gz")
-        f.data_se=paste0(query$phenotype,".SE.outfile.tsv.chr.gz")
+        f.data_beta=paste0(query$phenotype,".BETA.outfile.tsv.gz")
+        f.data_se=paste0(query$phenotype,".SE.outfile.tsv.gz")
       } 
     }
     # print(f.data_p)
@@ -421,6 +421,7 @@ server <- function(input, output, session) {
 
     #################################################
     # Downloadable csv of selected dataset ----
+    # #sudo chown -R shiny:shiny-apps data
     #################################################
     output$downloadData_table <- downloadHandler(
       filename = function() {
@@ -553,6 +554,10 @@ server <- function(input, output, session) {
       ### insert mendelian_randomization.R ()
       dfmrexposures$uniqid <- make_uniqID(dfmrexposures$CHR,dfmrexposures$BP,dfmrexposures$EFAL,dfmrexposures$NEFAL)
 
+      output$tbl_dfmrexposures <- renderTable({
+        dfmrexposures
+      })
+      
       input= unique(dfmrexposures$uniqid)
       query <- process_user_input(input,mapping.proteincoding)
       tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
@@ -560,7 +565,7 @@ server <- function(input, output, session) {
       showModal(modalDialog("Please wait.", footer=NULL))
       myFuture <- future(  {
         data_unadjusted <- extract_multiple_variants(tabix_query,dir_data,
-                                                     f.data_p="unadjusted.logP.outfile.tsv.chr.gz",
+                                                     f.data_p="unadjusted.logP.outfile.tsv.gz",
                                                      f.data_beta="unadjusted.BETA.outfile.tsv.gz",
                                                      f.data_se="unadjusted.SE.outfile.tsv.gz",
                                                      f.data.index="unadjusted.logP.outfile.index.tsv.gz"
@@ -581,10 +586,10 @@ server <- function(input, output, session) {
         
         
         data_rradjusted <- extract_multiple_variants(tabix_query,dir_data,
-                                                     f.data_p="stretch.logP.outfile.tsv.chr.gz",
+                                                     f.data_p="stretch.logP.outfile.tsv.gz",
                                                      f.data_beta="stretch.BETA.outfile.tsv.gz",
                                                      f.data_se="stretch.SE.outfile.tsv.gz",
-                                                     f.data.index="stretch.logP.outfile.index.tsv.g"
+                                                     f.data.index="stretch.logP.outfile.index.tsv.gz"
         )
         
         data_rradjusted <- harmonizedfs(dfmrexposures,data_rradjusted)
@@ -617,11 +622,14 @@ server <- function(input, output, session) {
           #print(str(value))
           #print(value)
           #rv_mr <<- value
-              
+            
         rv_mr$mrplot_rradjusted <<- value$mrplot_rradjusted
         rv_mr$mrplot_unadjusted <<- value$mrplot_unadjusted
         rv_mr$dfmrexposures_NA <<- value$dfmrexposures_NA
         rv_mr$dfmrexposures <<- value$dfmrexposures
+        rv_mr$data_unadjusted <<- value$data_unadjusted
+        rv_mr$data_rradjusted <<- value$data_rradjusted
+        
         futureData$data <<- value$data_unadjusted
         removeModal()
           #rv_mr$mrplot_rradjusted <<- value$mrplot_rradjusted
@@ -642,18 +650,16 @@ server <- function(input, output, session) {
       req(rv_mr$mrplot_unadjusted)
         ggplotly(rv_mr$mrplot_unadjusted,tooltip = "text",height = 400, width = 500,dynamicTicks=TRUE,source="source_ecgplot" )
     })
-    
+    # 
     output$Oplot_freqcheck <- renderPlot({
-      req(rv_mr$dfmrexposures)
-      print(rv_mr$dfmrexposures)
-      print(rv_mr$mrplot_unadjusted$df_snp_info)
-      plot(as.numeric(rv_mr$dfmrexposures$EAF),
-           rv_mr$mrplot_unadjusted$df_snp_info$EAF, 
-           xlab="EAF (Exposure data)", 
-           ylab="EAF (ECG data)"
-           ) #ggplotly(rv_mr$mrplot_unadjusted,tooltip = "text",height = 400, width = 500,dynamicTicks=TRUE,source="source_ecgplot" )
+      req(rv_mr$data_unadjusted)
+      plot(rv_mr$data_unadjusted$dfexposure$EAF ,
+           rv_mr$data_unadjusted$df_snp_info$EAF,
+           xlab="EAF (Exposure data)",
+           ylab="EAF (ECG data)")
     })
-    
+
+
 
     output$txt_num_mr_variants <- renderText({ 
      

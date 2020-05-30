@@ -11,8 +11,9 @@ make_uniqID<-function(chr,pos,allele1,allele2){
    return(snpids)
 }
 harmonizedfs <- function(dfexposure,data){
+   # dfexposure <- dfmrexposures
+   dfexposure <- dfexposure[!is.na(dfexposure$uniqid),]
    
-   dfexposure
    # harmonize
    UNIQID1 = "uniqid"
    EFAL1 <- "EFAL"
@@ -20,12 +21,9 @@ harmonizedfs <- function(dfexposure,data){
    EAF1 <- "EAF"
    BETA1 <- "BETA"
    SE1 <- "SE"
-   
+
    dfexposure <- dfexposure[,c(UNIQID1,EFAL1,NEFAL1,EAF1,BETA1,SE1)]
    colnames(dfexposure) <- c("uniqid","EFAL","NEFAL","EAF","BETA","SE")
-   
-   
-   dfexposure <- dfexposure[match(data$df_snp_info$uniqid,dfexposure$uniqid),]
    
    available_in_ecgdata <- data$df_snp_info$uniqid %in% dfexposure$uniqid
    data$df_snp_info <- data$df_snp_info[available_in_ecgdata,]
@@ -33,6 +31,9 @@ harmonizedfs <- function(dfexposure,data){
    data$df_snp_beta <- data$df_snp_beta[available_in_ecgdata,]
    data$df_snp_se <- data$df_snp_se[available_in_ecgdata,]
    
+   dfexposure <- dfexposure[match(data$df_snp_info$uniqid,dfexposure$uniqid),]
+   
+
    iswitch = dfexposure$EFAL != data$df_snp_info$EFAL & dfexposure$NEFAL == data$df_snp_info$EFAL
    dfexposure[iswitch,"BETA"] <- dfexposure[iswitch,"BETA"]*-1
    dfexposure[iswitch,"EAF"] <- 1-dfexposure[iswitch,"EAF"]
