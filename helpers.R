@@ -271,9 +271,9 @@ get_tabix_query <- function(query,df.static.pos,df.static.rsid){
 
 extract_multiple_variants <- function(tabix_query,
                                       dir_data,
-                                      f.data_p="stretch.logP.outfile.tsv.chr.gz.tophits.gz",
-                                      f.data_beta="stretch.logP.outfile.tsv.chr.gz.tophits.gz",
-                                      f.data_se="stretch.logP.outfile.tsv.chr.gz.tophits.gz",
+                                      f.data_p="stretch.logP.outfile.tsv.gz.tophits.gz",
+                                      f.data_beta="stretch.logP.outfile.tsv.gz.tophits.gz",
+                                      f.data_se="stretch.logP.outfile.tsv.gz.tophits.gz",
                                       f.data.index="stretch.logP.outfile.index.tsv.gz.tophits.gz") {
   
   ptm <- proc.time()
