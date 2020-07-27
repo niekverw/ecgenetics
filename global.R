@@ -3,12 +3,15 @@
 f.mapping.proteincoding = "data/mapping.proteincoding.tsv"
 
 if (Sys.getenv("USER")=="niek"){
-  print("loading strato variables")
-  f_static="/Users/niek/data/ecg/snpindexes.Rdata"
-  f_ecg_unadjusted="/Users/niek/data/ecg/all.SignalAverage.unadjusted.mean.QRS.tsv.gz.mean.tsv"
-  f_ecg_stretch="/Users/niek/data/ecg/all.SignalAverage.stretch.mean.QRS.tsv.gz.mean.tsv"
-  dir_data = "/Users/niek/data/ecg/" # contains "all_stats.unadjusted" and "all_stats.stretch"
-  dir_recombination = "/data_work/databases/genetic_recombination_rates/hapmap/"
+  # print("loading strato variables")
+  # f_static="/Users/niek/data/ecg/snpindexes.Rdata"
+  # f_ecg_unadjusted="/Users/niek/data/ecg/all.SignalAverage.unadjusted.mean.QRS.tsv.gz.mean.tsv"
+  # f_ecg_stretch="/Users/niek/data/ecg/all.SignalAverage.stretch.mean.QRS.tsv.gz.mean.tsv"
+  # dir_data = "/Users/niek/data/ecg/" # contains "all_stats.unadjusted" and "all_stats.stretch"
+  # dir_recombination = "/data_work/databases/genetic_recombination_rates/hapmap/"
+  datadir="/Users/niek/data/ecg/data" #(300001-1) %/% 300000
+  dir_recombination = "/Users/niek/data/ecg/data/recombination_rates/"
+  
 } else if (Sys.getenv("USER") == "benzhi") {
   print("loading strato variables")
   f_static="/mnt/linux_data/data/ecgenetics/snpindexes.Rdata"
@@ -17,11 +20,12 @@ if (Sys.getenv("USER")=="niek"){
   dir_data = "/mnt/linux_data/data/ecgenetics/"
   dir_recombination = "/mnt/linux_data/data/ecgenetics/recombination_rates/"
 } else {
-  f_static="/data/datasets/ecg_morph_stats/snpindexes.Rdata"
-  f_ecg_unadjusted="/data/datasets/ecg_morph_stats/all.SignalAverage.unadjusted.mean.QRS.tsv.gz.mean.tsv"
-  f_ecg_stretch="/data/datasets/ecg_morph_stats/all.SignalAverage.stretch.mean.QRS.tsv.gz.mean.tsv"
-  dir_data = "/data/datasets/ecg_morph_stats/" # contains "all_stats.unadjusted" and "all_stats.stretch"
-  dir_recombination = "/data/datasets/recombination_rates/"
+  # f_static="/data/datasets/ecg_morph_stats/snpindexes.Rdata"
+  # f_ecg_unadjusted="/data/datasets/ecg_morph_stats/all.SignalAverage.unadjusted.mean.QRS.tsv.gz.mean.tsv"
+  # f_ecg_stretch="/data/datasets/ecg_morph_stats/all.SignalAverage.stretch.mean.QRS.tsv.gz.mean.tsv"
+  # dir_data = "/data/datasets/ecg_morph_stats/" # contains "all_stats.unadjusted" and "all_stats.stretch"
+  # dir_recombination = "/data/datasets/recombination_rates/"
+  datadir="/data/datasets/ecg_morph_stats/data"
 }
 ################################################
 # #https://github.com/Automattic/node-canvas/wiki/Installation:-Mac-OS-X
@@ -75,7 +79,7 @@ plan(future::multiprocess)
 # save(df.static.rsid,df.static.pos,file=f_static)
 # df.static<-NULL
 
-if (!exists("df.static.rsid")){load(f_static)}
+if (!exists("df.static.rsid")){load(paste0(datadir,"/various_data/snpindexes.Rdata"))}
 
 # check.size(df.static)
 # check.size(df.static.rsid)
@@ -88,8 +92,8 @@ if (!exists("mapping.proteincoding")){
 # 
 #df.static$chromosome <- paste0("chr",df.static$CHR)
 
-if (!exists("df_ecg_unadjusted")){df_ecg_unadjusted<-fread(f_ecg_unadjusted)}
-if (!exists("df_ecg_stretch")){df_ecg_stretch<-fread(f_ecg_stretch)}
+if (!exists("df_ecg_unadjusted")){df_ecg_unadjusted<-fread(paste0(datadir,"/various_data/all.SignalAverage.unadjusted.mean.QRS.tsv.gz.mean.tsv"))}
+if (!exists("df_ecg_stretch")){df_ecg_stretch<-fread(paste0(datadir,"/various_data/all.SignalAverage.stretch.mean.QRS.tsv.gz.mean.tsv"))}
 
 
 #### MULTIPLE SNPS

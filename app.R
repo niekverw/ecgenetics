@@ -188,42 +188,29 @@ server <- function(input, output, session) {
     f.data_beta=""
     f.data_se=""
     if( query$subset == "tophits"){
-      f.data_p=paste0(query$phenotype,".logP.outfile.tsv.gz.tophits.gz")
-      f.data.index=paste0("unadjusted.logP.outfile.index.tsv.gz.tophits.gz")
+      f.data_p=paste0(datadir,"/tophits_data/",query$phenotype,".logP.outfile.tsv.gz.tophits.gz")
+      f.data.index=paste0(datadir,"/tophits_data/","unadjusted.logP.outfile.index.tsv.gz.tophits.gz")
       if(input$include_betas){
-        f.data_beta=paste0(query$phenotype,".BETA.outfile.tsv.gz.tophits.gz")
-        f.data_se=paste0(query$phenotype,".SE.outfile.tsv.gz.tophits.gz")
+        f.data_beta=paste0(datadir,"/tophits_data/",query$phenotype,".BETA.outfile.tsv.gz.tophits.gz")
+        f.data_se=paste0(datadir,"/tophits_data/",query$phenotype,".SE.outfile.tsv.gz.tophits.gz")
       }
     } else {
-      f.data_p = paste0(query$phenotype,".logP.outfile.tsv.gz")
-      f.data.index = paste0("unadjusted.logP.outfile.index.tsv.gz")
+      f.data_p = paste0(datadir,"/full_data_combined/",query$phenotype,".logP.outfile.tsv.gz")
+      f.data.index = paste0(datadir,"/full_data_combined/","unadjusted.logP.outfile.index.tsv.gz")
       if(input$include_betas){
-        f.data_beta=paste0(query$phenotype,".BETA.outfile.tsv.gz")
-        f.data_se=paste0(query$phenotype,".SE.outfile.tsv.gz")
+        f.data_beta=paste0(datadir,"/full_data_combined/",query$phenotype,".BETA.outfile.tsv.gz")
+        f.data_se=paste0(datadir,"/full_data_combined/",query$phenotype,".SE.outfile.tsv.gz")
       } 
     }
-    # print(f.data_p)
-    # print(f.data.index)
-    # print(dir_data)
-    # print(tabix_query)
-    # data <- extract_multiple_variants(tabix_query,
-    #                                   dir_data,
-    #                                   f.data_p,
-    #                                   f.data_beta,f.data_se,
-    #                                   f.data.index)
-    # print(data)
-    #cat(file=stderr(),"||| query$entry:",query$entry,"||| nrow(df.static.rsid)",nrow(df.static.rsid), "||| nrow(df.static.pos)",nrow(df.static.pos), "|||   raw input: ",input$rsid,"|||    tabix_query$query$snp",paste(tabix_query$query$snp,collapse=","),   "|||   tabix_query:",paste(tabix_query$tabix_query,collapse=","),  "|||   datadir: ", dir_data , "|||   file:",f.data_unadjusted,"  \n")
     showModal(modalDialog("Please wait.", footer=NULL))
     
     myFuture <- future(  {
       data <- extract_multiple_variants(tabix_query,
-                                        dir_data,
                                         f.data_p,
                                         f.data_beta,f.data_se,
                                         f.data.index)
       data
     },  globals = list(user_input = input$rsid,
-                       dir_data = dir_data,
                        mapping.proteincoding= mapping.proteincoding,
                        tabix_query=tabix_query,
                        f.data_p =f.data_p,f.data_beta=f.data_beta,f.data_se=f.data_se,
@@ -569,7 +556,7 @@ server <- function(input, output, session) {
 
       showModal(modalDialog("Please wait.", footer=NULL))
       myFuture <- future(  {
-        data_unadjusted <- extract_multiple_variants(tabix_query,dir_data,
+        data_unadjusted <- extract_multiple_variants(tabix_query,
                                                      f.data_p="unadjusted.logP.outfile.tsv.gz",
                                                      f.data_beta="unadjusted.BETA.outfile.tsv.gz",
                                                      f.data_se="unadjusted.SE.outfile.tsv.gz",

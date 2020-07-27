@@ -105,7 +105,7 @@ make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,d
 #   query_time_df <- proc.time() - ptm
 #   ptm <- proc.time()
 #   for (f in unique(tabix_f)){
-#     tabix_file_logp = paste0(dir_data,"/",f,".signed_logP.tsv.gz.t.tsv.gz")
+#     tabix_file_logp = paste0(f,".signed_logP.tsv.gz.t.tsv.gz")
 #     #print(paste0("tabix_file_logp: ",tabix_file_logp))
 #     tabix_query = tabix_queries[tabix_f %in% f]
 #     f_vct_snp_p = seqminer::tabix.read( tabix_file_logp, tabix_query)
@@ -270,33 +270,33 @@ get_tabix_query <- function(query,df.static.pos,df.static.rsid){
 
 
 extract_multiple_variants <- function(tabix_query,
-                                      dir_data,
                                       f.data_p="stretch.logP.outfile.tsv.gz.tophits.gz",
                                       f.data_beta="stretch.logP.outfile.tsv.gz.tophits.gz",
                                       f.data_se="stretch.logP.outfile.tsv.gz.tophits.gz",
                                       f.data.index="stretch.logP.outfile.index.tsv.gz.tophits.gz") {
   
   ptm <- proc.time()
-  df_snp_info = seqminer::tabix.read( paste0(dir_data,"/",f.data.index), tabix_query$tabix_query)
+  
+  df_snp_info = seqminer::tabix.read( paste0(f.data.index), tabix_query$tabix_query)
   df_snp_info = strsplit(df_snp_info, '\t')
   df_snp_info = as.data.frame(do.call(rbind, df_snp_info),stringsAsFactors=FALSE)
   names(df_snp_info) <- c("i","uniqid","SNP","CHR","BP","EFAL","NEFAL","EAF","INFO")
   
-  n.missingsnps  = sum(!df_snp_info$i %in% tabix_query$indices)
+  n.missingsnps  = sum(!tabix_query$indices %in% df_snp_info$i ) # this should be part of tabix_query
   
-  df_snp_p = seqminer::tabix.read( tabixFile=paste0(dir_data,"/",f.data_p), tabixRange= tabix_query$tabix_query )
+  df_snp_p = seqminer::tabix.read( tabixFile=paste0(f.data_p), tabixRange= tabix_query$tabix_query )
   df_snp_p = strsplit(df_snp_p, '\t')
   df_snp_p = as.data.frame(do.call(rbind, df_snp_p),stringsAsFactors=FALSE)
   df_snp_p = df_snp_p[3:502]
   df_snp_p = sapply(df_snp_p, as.numeric)
   if(length(df_snp_p)==500) df_snp_p = as.data.frame(t(as.data.frame(df_snp_p)))
   if (f.data_beta!="" & f.data_se!="" ){
-    df_snp_beta = seqminer::tabix.read( tabixFile=paste0(dir_data,"/",f.data_beta), tabixRange= tabix_query$tabix_query )
+    df_snp_beta = seqminer::tabix.read( tabixFile=paste0(f.data_beta), tabixRange= tabix_query$tabix_query )
     df_snp_beta = strsplit(df_snp_beta, '\t')
     df_snp_beta = as.data.frame(do.call(rbind, df_snp_beta),stringsAsFactors=FALSE)
     df_snp_beta = df_snp_beta[3:502]
     
-    df_snp_se = seqminer::tabix.read( tabixFile=paste0(dir_data,"/",f.data_se), tabixRange= tabix_query$tabix_query )
+    df_snp_se = seqminer::tabix.read( tabixFile=paste0(f.data_se), tabixRange= tabix_query$tabix_query )
     df_snp_se = strsplit(df_snp_se, '\t')
     df_snp_se = as.data.frame(do.call(rbind, df_snp_se),stringsAsFactors=FALSE)
     df_snp_se = df_snp_se[3:502]

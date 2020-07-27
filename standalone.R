@@ -1,4 +1,4 @@
-setwd("/data_work/bitbucket/itc-main-repo/Niek/ECG/exerciseecg_data/ECG_averaging/shinyapp/ecgenetics6")
+setwd("/Users/niek/repos/ecgenetics/")
 source("global.R")
 source("helpers.R")
 source("helpers.heatmap.R")
@@ -35,14 +35,25 @@ input = "BCAT1"
 input = "20:62000000-62300000"
 input = "rs104571" #wrong
 input="rs2234962,rs1763604 "
+
 query <- process_user_input(input,mapping.proteincoding)
 tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
-data <- extract_multiple_variants(tabix_query,dir_data,
-                                  f.data_p="unadjusted.logP.outfile.tsv.chr.gz.tophits.gz",
+data <- extract_multiple_variants(tabix_query,
+                                  f.data_p=paste0(datadir,"/tophits_data/unadjusted.logP.outfile.tsv.gz.tophits.gz"),
                                   f.data_beta="",
                                   f.data_se="",
-                                  f.data.index="unadjusted.logP.outfile.index.tsv.gz.tophits.gz"
+                                  f.data.index=paste0(datadir,"/tophits_data/unadjusted.logP.outfile.index.tsv.gz.tophits.gz")
                                   )
+input="rs10399793,rs530867301"
+query <- process_user_input(input,mapping.proteincoding)
+tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
+
+data <- extract_multiple_variants(tabix_query,
+                                  f.data_p=paste0(datadir,"/full_data_combined/unadjusted.logP.outfile.tsv.gz"),
+                                  f.data_beta="",
+                                  f.data_se="",
+                                  f.data.index=paste0(datadir,"/full_data_combined/unadjusted.logP.outfile.tsv.gz")
+)
 
 
 ecg_plot <- make_ecg_plot(vct_snp_p=data$df_snp_p[1,],
@@ -61,7 +72,7 @@ for (v in  unique(dftable1$SNP)) {
    input=v
    query <- process_user_input(input,mapping.proteincoding)
    tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
-   data <- extract_multiple_variants(tabix_query,dir_data,
+   data <- extract_multiple_variants(tabix_query,
                                      f.data_p="unadjusted.logP.outfile.tsv.chr.gz.tophits.gz",
                                      f.data_beta="",
                                      f.data_se="",
