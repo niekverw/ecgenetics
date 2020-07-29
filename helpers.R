@@ -28,8 +28,8 @@ make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,d
     dfecg$cil  <- dfecg$cil /BETAf
     dfecg$ciu  <- dfecg$ciu /BETAf
     
-    dfecg$mean1  <- (dfecg$mean0+ 100*as.numeric(vct_snp_beta))
-    dfecg$mean2  <- (dfecg$mean0+ 100*as.numeric(vct_snp_beta)*2)
+    dfecg$mean1  <- (dfecg$mean0- 100*as.numeric(vct_snp_beta))
+    dfecg$mean2  <- (dfecg$mean0+ 100*as.numeric(vct_snp_beta))
     # 
   }
   

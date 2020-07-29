@@ -41,12 +41,15 @@ ui <- navbarPage(title="ECGenetics Browser",
                        c("Tophits (140k+, fast)" = "tophits",
                          "GW (19M+ slow)" = "all")),
           radioButtons("phenotype", "PhenoType",
-                       c("Averaged" = "unadjusted",
-                         "RR-corrected" = "stretch")),
-          sliderInput("slider_window","Extend region (Kb)",
+                       c("Unadjusted" = "unadjusted",
+                         "RR-adjusted" = "stretch")),
+          sliderInput("slider_window","Extend region (Kb) in case you provide a single region or gene.",
                       min=0,max=250, value=50, step = 10),
-          checkboxInput(inputId="include_betas", label="Include beta and se's", value = FALSE, width = NULL),
-
+          checkboxInput(inputId="include_betas", label="Include beta and se's to plot the effect", value = FALSE, width = NULL),
+          useShinyjs(),
+          shinyjs::hidden(
+            checkboxInput(inputId="plot_adjusted_means", label="> plot the predicted effect on the means. This is intented to be an illustration, as the effect is magnified.", value = FALSE, width = NULL)
+          ),
           actionButton("goButton", "Go!"), #downloadButton("go_downloadall", "SNP Data"),
           hr(),
           img(src = "https://www.opciweb.nl/wp-content/uploads/2017/08/umcg-rug-onderzoek-ci-leren-engels-horizontaal.gif",width="100%"),
@@ -59,10 +62,6 @@ ui <- navbarPage(title="ECGenetics Browser",
             tabPanel("Table",
               DT::dataTableOutput("oTable"),
               downloadButton("downloadData_table", "Download"),
-              useShinyjs(),
-              shinyjs::hidden(
-              checkboxInput(inputId="plot_adjusted_means", label="Plot the predicted effect on the means. This is intented to be an illustration, as the effect is magnified.", value = FALSE, width = NULL)
-              ),
               verbatimTextOutput("oText")
             ),
             tabPanel("Regional Plot",
