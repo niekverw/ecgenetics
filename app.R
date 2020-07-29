@@ -59,6 +59,10 @@ ui <- navbarPage(title="ECGenetics Browser",
             tabPanel("Table",
               DT::dataTableOutput("oTable"),
               downloadButton("downloadData_table", "Download"),
+              useShinyjs(),
+              shinyjs::hidden(
+              checkboxInput(inputId="plot_adjusted_means", label="Plot the predicted effect on the means. This is intented to be an illustration, as the effect is magnified.", value = FALSE, width = NULL)
+              ),
               verbatimTextOutput("oText")
             ),
             tabPanel("Regional Plot",
@@ -149,7 +153,7 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "analysistabs",
                       selected = "Table"
     )
-    
+    shinyjs::hide("plot_adjusted_means")
     
     # load preloaded data quicly (all lead snps) if nothing on input is changed
     if(input$rsid == paste(dftsne$rsid,collapse = ", ")){
@@ -193,6 +197,7 @@ server <- function(input, output, session) {
       if(input$include_betas){
         f.data_beta=paste0(datadir,"/tophits_data/",query$phenotype,".BETA.outfile.tsv.gz.tophits.gz")
         f.data_se=paste0(datadir,"/tophits_data/",query$phenotype,".SE.outfile.tsv.gz.tophits.gz")
+        shinyjs::show("plot_adjusted_means")
       }
     } else {
       f.data_p = paste0(datadir,"/full_data_combined/",query$phenotype,".logP.outfile.tsv.gz")
@@ -200,6 +205,7 @@ server <- function(input, output, session) {
       if(input$include_betas){
         f.data_beta=paste0(datadir,"/full_data_combined/",query$phenotype,".BETA.outfile.tsv.gz")
         f.data_se=paste0(datadir,"/full_data_combined/",query$phenotype,".SE.outfile.tsv.gz")
+        shinyjs::show("plot_adjusted_means")
       } 
     }
     showModal(modalDialog("Please wait.", footer=NULL))
@@ -209,7 +215,7 @@ server <- function(input, output, session) {
                                         f.data_p,
                                         f.data_beta,f.data_se,
                                         f.data.index)
-      data
+      return(data)
     },  globals = list(user_input = input$rsid,
                        mapping.proteincoding= mapping.proteincoding,
                        tabix_query=tabix_query,
@@ -322,7 +328,7 @@ server <- function(input, output, session) {
                                  vct_snp_se=if(futureData$data$df_snp_se !=""){futureData$data$df_snp_se[Clicked$i,]}else{""}, # not used//todo
                                  vct_snp_info=futureData$data$df_snp_info[Clicked$i,],
                                  df_ecg_stats = df_ecg_stats,
-                                 invert=FALSE) # average ecg signal.
+                                 invert=FALSE,plot_adjusted_means = input$plot_adjusted_means) # average ecg signal.
                   )
        ggplotly(ecg_plot,tooltip = "text",height = 400, width = 500,dynamicTicks=TRUE,source="source_ecgplot" )
        

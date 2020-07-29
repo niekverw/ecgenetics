@@ -5,7 +5,7 @@ check.size <- function(x){
 }
 
 
-make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,df_ecg_stats=df_ecg_unadjusted,invert=FALSE){
+make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,df_ecg_stats=df_ecg_unadjusted,invert=FALSE,plot_adjusted_means=F){
   #print(nrow(vct_snp_p))
   dfecg <- cbind(as.data.frame(df_ecg_stats),
                  t(vct_snp_p)
@@ -28,6 +28,8 @@ make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,d
     dfecg$cil  <- dfecg$cil /BETAf
     dfecg$ciu  <- dfecg$ciu /BETAf
     
+    dfecg$mean1  <- (dfecg$mean0+ 100*as.numeric(vct_snp_beta))
+    dfecg$mean2  <- (dfecg$mean0+ 100*as.numeric(vct_snp_beta)*2)
     # 
   }
   
@@ -44,7 +46,8 @@ make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,d
   
   #print(Pf)
   #print(Pfdefault)
-  dfecg$mean0  <- dfecg$mean0 /Pf
+  #dfecg$mean0  <- dfecg$mean0 /Pf
+
   #print(dfecg[order(dfecg$time),])
   #### FOR MULTIPLE LINES IN ONE PLOT, DONT KNOW YET HOW THIS IS DONE BEST WITH USER INPUT. 
   # ecgplot <- ggplot()+
@@ -63,10 +66,16 @@ make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,d
                                                          '<br>P-value: ',formatC(10^(-abs(logP)),digits=3),
                                                          '<br>-Log10(P-value): ',abs(logP) ),
                                            group=1  ))  +
-    geom_line(data=dfecg,aes(x = time,y=mean0),linetype="dotted",colour="black") +
+    geom_line(data=dfecg,aes(x = time,y=mean0/Pf),linetype="dotted",colour="black") +
     scale_color_manual(name="Groups",values=c("red", "blue"))+
     ylab("Signed -log10(P-value)") + xlab("Time (ms)") +
     labs(title=vct_snp_info$SNP, subtitle=vct_snp_info$Gene)
+
+  if( plot_adjusted_means==T & exists("BETAf") ){
+    ecgplot <- ecgplot + 
+      geom_line(data=dfecg,aes(x = time,y=mean1/Pf),linetype="dotted",colour="pink") +
+      geom_line(data=dfecg,aes(x = time,y=mean2/Pf),linetype="dotted",colour="purple") 
+  }
   
   if(length(vct_snp_beta)==500 & length(vct_snp_se)==500 & length(vct_snp_p)==500 ) {
     ecgplot <- ecgplot +  geom_ribbon(aes(ymin=cil, ymax=ciu,x = time), linetype=2, alpha=0.1) + 

@@ -40,25 +40,25 @@ query <- process_user_input(input,mapping.proteincoding)
 tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
 data <- extract_multiple_variants(tabix_query,
                                   f.data_p=paste0(datadir,"/tophits_data/unadjusted.logP.outfile.tsv.gz.tophits.gz"),
-                                  f.data_beta="",
-                                  f.data_se="",
+                                  f.data_beta=paste0(datadir,"/tophits_data/unadjusted.BETA.outfile.tsv.gz.tophits.gz"),
+                                  f.data_se=paste0(datadir,"/tophits_data/unadjusted.SE.outfile.tsv.gz.tophits.gz"),
                                   f.data.index=paste0(datadir,"/tophits_data/unadjusted.logP.outfile.index.tsv.gz.tophits.gz")
                                   )
-input="rs10399793,rs530867301"
-query <- process_user_input(input,mapping.proteincoding)
-tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
-
-data <- extract_multiple_variants(tabix_query,
-                                  f.data_p=paste0(datadir,"/full_data_combined/unadjusted.logP.outfile.tsv.gz"),
-                                  f.data_beta="",
-                                  f.data_se="",
-                                  f.data.index=paste0(datadir,"/full_data_combined/unadjusted.logP.outfile.tsv.gz")
-)
+# input="rs10399793,rs530867301"
+# query <- process_user_input(input,mapping.proteincoding)
+# tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
+# 
+# data <- extract_multiple_variants(tabix_query,
+#                                   f.data_p=paste0(datadir,"/full_data_combined/unadjusted.logP.outfile.tsv.gz"),
+#                                   f.data_beta="",
+#                                   f.data_se="",
+#                                   f.data.index=paste0(datadir,"/full_data_combined/unadjusted.logP.outfile.tsv.gz")
+# )
 
 
 ecg_plot <- make_ecg_plot(vct_snp_p=data$df_snp_p[1,],
-                          vct_snp_beta=data$df_snp_beta,
-                          vct_snp_se=data$df_snp_se,
+                          vct_snp_beta=data$df_snp_beta[1,],
+                          vct_snp_se=data$df_snp_se[1,],
                           vct_snp_info=data$df_snp_info[1,],
                           df_ecg_stats=df_ecg_unadjusted,
                           invert=FALSE)
