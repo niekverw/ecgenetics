@@ -48,7 +48,7 @@ ui <- navbarPage(title="ECGenetics Browser",
           checkboxInput(inputId="include_betas", label="Include beta and se's to plot the effect", value = FALSE, width = NULL),
           useShinyjs(),
           shinyjs::hidden(
-            checkboxInput(inputId="plot_adjusted_means", label="> plot the predicted effect on the means. This is intented to be an illustration, as the effect is magnified.", value = FALSE, width = NULL)
+            checkboxInput(inputId="plot_adjusted_means", label="> plot the predicted effect on the means. This is intented to be an illustration, as the effect is exagragated.", value = FALSE, width = NULL)
           ),
           actionButton("goButton", "Go!"), #downloadButton("go_downloadall", "SNP Data"),
           hr(),
