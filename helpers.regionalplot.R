@@ -18,7 +18,7 @@ get_ld <- function(data,LD=T){
   print(data$max.snp.index)
   cat("get Ld, sorry slow.. ")
   pops="EUR"
-  ld_command = paste0("https://analysistools.nci.nih.gov/LDlink/LDlinkRest/ldproxy?var=", rsid,"&pop=",pops,"&r2_d=r2&token=c0f613f149ab")
+  ld_command = paste0("https://ldlink.nci.nih.gov/LDlinkRest/ldproxy?var=", rsid,"&pop=",pops,"&r2_d=r2&token=70722d8a3958")
   print(ld_command)
   ####### EDIT
   df.ld = as.data.frame(data.table::fread(ld_command))
