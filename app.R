@@ -45,10 +45,10 @@ ui <- navbarPage(title="ECGenetics Browser",
                          "RR-adjusted" = "stretch")),
           sliderInput("slider_window","Extend region (Kb) in case you provide a single region or gene.",
                       min=0,max=250, value=50, step = 10),
-          checkboxInput(inputId="include_betas", label="Include beta and se's to plot the effect", value = FALSE, width = NULL),
+          checkboxInput(inputId="include_betas", label="Include the coefficients and 95% CI!", value = FALSE, width = NULL),
           useShinyjs(),
           shinyjs::hidden(
-            checkboxInput(inputId="plot_adjusted_means", label="> plot the predicted effect on the means. This is intented to be an illustration, as the effect is exagragated.", value = FALSE, width = NULL)
+            checkboxInput(inputId="plot_adjusted_means", label="> plot the predicted effect on the means. This is intented to be an illustration, as the effect is exagragated.", value = TRUE, width = NULL)
           ),
           actionButton("goButton", "Go!"), #downloadButton("go_downloadall", "SNP Data"),
           hr(),

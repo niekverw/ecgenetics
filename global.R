@@ -45,6 +45,7 @@ library(heatmaply)
 library("bedr")
 library(seqminer)
 library(shinyjs)
+library(MendelianRandomization)
 ### 
 # https://www.r-bloggers.com/long-running-tasks-with-shiny-challenges-and-solutions/
 # https://cran.r-project.org/web/packages/promises/vignettes/shiny.html

@@ -2,8 +2,7 @@
 library(scales)
 loadrecombination<-function(chr){
   #recomb<-data.frame(fread(paste0("/data/p255753/References/ALL_1000G_phase1integrated_v3_impute/genetic_map_chr",chr,"_combined_b37.txt")))
-  recomb<-data.frame(fread(paste0(dir_recombination,"/genetic_map_chr",chr,"_combined_b37.txt")))
-  
+  recomb<-data.frame(fread(paste0(datadir,"/recombination_rates/genetic_map_chr",chr,"_combined_b37.txt")))  
   return(recomb)  
 }
 
