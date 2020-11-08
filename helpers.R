@@ -152,7 +152,7 @@ make_ecg_plot <- function(vct_snp_p,vct_snp_beta="",vct_snp_se="",vct_snp_info,d
 
 ######################
 #### VERSION 2.0
-process_user_input <- function(entry,mapping.proteincoding,window=500000,subset="tophits",phenotype="unadjusted",max_query=1000){
+process_user_input <- function(entry,mapping.proteincoding,window=500000,subset="tophits",phenotype="unadjusted",max_query=1000,standalone=F){
   
   entry=unlist(strsplit( entry ,"\n|[, ]+"))
   entry=unlist(strsplit( entry ,"\n|[, ]+"))
@@ -198,7 +198,7 @@ process_user_input <- function(entry,mapping.proteincoding,window=500000,subset=
   }
   
   ### ERROR CHECK if position > 2.5 MB. 
-  if( query$entry =="positional"  ){
+  if( query$entry =="positional" & standalone==F){
     if((query$endpos-query$startpos)>2500000){
       showModal(modalDialog(
         title = "error",

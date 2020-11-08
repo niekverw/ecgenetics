@@ -35,8 +35,8 @@ input = "BCAT1"
 input = "20:62000000-62300000"
 input = "rs104571" #wrong
 input="rs2234962,rs1763604 "
-
-query <- process_user_input(input,mapping.proteincoding)
+input="20:40000000-50000000"
+query <- process_user_input(input,mapping.proteincoding,standalone=T)
 tabix_query <- get_tabix_query(query,df.static.pos,df.static.rsid)
 data <- extract_multiple_variants(tabix_query,
                                   f.data_p=paste0(datadir,"/tophits_data/unadjusted.logP.outfile.tsv.gz.tophits.gz"),
@@ -55,18 +55,38 @@ data <- extract_multiple_variants(tabix_query,
 #                                   f.data.index=paste0(datadir,"/full_data_combined/unadjusted.logP.outfile.tsv.gz")
 # )
 
-
-ecg_plot <- make_ecg_plot(vct_snp_p=data$df_snp_p[1,],
-                          vct_snp_beta=data$df_snp_beta[1,],
-                          vct_snp_se=data$df_snp_se[1,],
-                          vct_snp_info=data$df_snp_info[1,],
-                          df_ecg_stats=df_ecg_unadjusted,
+i=data$max.snp.index[1]
+ecg_plot <- make_ecg_plot(vct_snp_p=data$df_snp_p[i,],
+                          vct_snp_beta=data$df_snp_beta[i,],
+                          vct_snp_se=data$df_snp_se[i,],
+                          vct_snp_info=data$df_snp_info[i,],
+                          df_ecg_stats=df_ecg_unadjusted,plot_adjusted_means = T,
                           invert=FALSE)
 ecg_plot
 
 
 dftable1 <- fread("/Users/niek/Dropbox/Gwasshared_2/ECG_morphology/table1.tsv")
 
+data$df_snp_info[data$df_snp_info$SNP %in% "rs57926290",]
+regional_plot(data,LD =T)
+
+
+fwrite(
+  data.frame(
+           uniqid=data$df_snp_info$uniqid,
+          SNP=data$df_snp_info$SNP,
+          CHR=data$df_snp_info$CHR,
+          BP=data$df_snp_info$BP,
+          GENPOS=0,
+          ALLELE1=data$df_snp_info$EFAL,
+          ALLELE0=data$df_snp_info$NEFAL,
+          A1FREQ=data$df_snp_info$EAF,
+          INFO=data$df_snp_info$INFO,
+          BETA=data$df_snp_beta[,data$max.snp.index[2]],
+          SE=data$df_snp_se[,data$max.snp.index[2]],
+          pval=10^-abs((data$df_snp_p[,data$max.snp.index[2]]))
+),
+file="/Users/niek/Dropbox/Gwasshared_2/ECG_morphology/st-depression/sumstats.KCNB1.ECG.142ms.tsv",quote = F,row.names = F,sep="\t")
 
 for (v in  unique(dftable1$SNP)) {
    input=v

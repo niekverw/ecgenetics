@@ -34,7 +34,8 @@ ui <- navbarPage(title="ECGenetics Browser",
           width=3,
           
 #          hr(),
-          p("Enter a list of SNPs (rs572474770, rs776293589, 2:179698596), a region (2:179381323-179405807) or a Gene (e.g. SCN5A) and click the Go button to extract variants."), #, Region (e.g. 10:30000-40000) or Gene name (e.g. TTN) 
+          p("Enter a list of SNPs (rs572474770, rs776293589, 2:179698596), a region (2:179381323-179405807) or a Gene (e.g. SCN5A) and click the Go button to extract variants."),
+
           textAreaInput("rsid", "RSids, region or gene",value = paste(dftsne$rsid,collapse = ", "),#TTN independent
                         width="100%",rows = 4),
           radioButtons("subset", "Search Dataset",
@@ -53,7 +54,8 @@ ui <- navbarPage(title="ECGenetics Browser",
           actionButton("goButton", "Go!"), #downloadButton("go_downloadall", "SNP Data"),
           hr(),
           img(src = "https://www.opciweb.nl/wp-content/uploads/2017/08/umcg-rug-onderzoek-ci-leren-engels-horizontaal.gif",width="100%"),
-          p("under development, n.verweij@umcg.nl. 2019" ,align = "right", style = "font-size:10px;  font-style: italic ")
+          p("under development, n.verweij@umcg.nl. 2019" ,align = "right", style = "font-size:10px;  font-style: italic "),
+          p("(note: Microsoft browsers may not work, try disabling bitdefender)",align = "right", style = "font-size:10px;  font-style: italic ") #, Region (e.g. 10:30000-40000) or Gene name (e.g. TTN) 
           #p("n.verweij@umcg.nl", style = "font-size:11px")
         ),
         mainPanel(
@@ -85,13 +87,6 @@ ui <- navbarPage(title="ECGenetics Browser",
         )
       )
     ),
-   # tabPanel("MATTERHORN",
-   #          titlePanel(h3("MATTERHORN: THE REGION GENErator")),
-   #          hr(),
-   #          p("v0.00 - Under construction.  2019" ,align = "left"),
-   #          verbatimTextOutput("Summary"),
-   #          img(src='https://db-service.toubiz.de/var/plain_site/storage/images/orte/zermatt/matterhorn/cr-pascal-gertschen-2018-zt_sommer_web_dscf0814/3206064-1-ger-DE/cr-Pascal-Gertschen-2018-ZT_Sommer_Web_DSCF0814_front_large.jpg', align = "left")
-   # ),
    tabPanel("Interactive t-SNE plot",
             titlePanel(h3("Interactive t-SNE plot (manuscript)")),
             plotlyOutput("oPlotTsne",width="100%",height="auto"),
