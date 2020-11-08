@@ -5,6 +5,8 @@ source("helpers.heatmap.R")
 source("helpers.regionalplot.R")
 source("get_nearest_gene.r")
 
+library(ggpubr)
+
 # df.static <- df.static[df.static$f %in% c(1,2),]
 # save(df.static,file=f_static)
 rsids=c("rs1045716","rs145425222")
