@@ -5,3 +5,6 @@ Here are some scripts used to analyse genetics of the ecg described in https://w
 
 - app.R: shiny app to analyse the data through a web-interface, www.ecgenetics.org. 
 - standalone.R: examples on how to query and visualize the data in R. 
+
+- full sumstats download: https://dataverse.harvard.edu/dataverse/ecg-genetics/
+
